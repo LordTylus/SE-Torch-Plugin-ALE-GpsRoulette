@@ -148,6 +148,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ALE-GpsRoulette\PurchaseMode.cs" />
+    <Compile Include="ALE-GpsRoulette\GpsRouletteCommands.cs" />
     <Compile Include="ALE-GpsRoulette\GpsRouletteConfig.cs" />
     <Compile Include="ALE-GpsRoulette\GpsRouletteControl.xaml.cs">
       <DependentUpon>GpsRouletteControl.xaml</DependentUpon>
