@@ -91,9 +91,9 @@
         <TextBlock Grid.Column="1" Grid.Row ="16" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord in exchange for credits." Margin="5"/>
         <TextBlock Grid.Column="0" Grid.Row ="17" VerticalAlignment="Top" Text="!gps buy online" Margin="5" />
         <TextBlock Grid.Column="1" Grid.Row ="17" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an online player in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="18" VerticalAlignment="Top" Text="!gps buy random" Margin="5" />
+        <TextBlock Grid.Column="0" Grid.Row ="18" VerticalAlignment="Top" Text="!gps buy inactive" Margin="5" />
         <TextBlock Grid.Column="1" Grid.Row ="18" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an inactive player in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="19" VerticalAlignment="Top" Text="!gps buy random" Margin="5" />
+        <TextBlock Grid.Column="0" Grid.Row ="19" VerticalAlignment="Top" Text="!gps buy npc" Margin="5" />
         <TextBlock Grid.Column="1" Grid.Row ="19" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an NPC station in exchange for credits." Margin="5"/>
         <TextBlock Grid.Column="0" Grid.Row ="20" VerticalAlignment="Top" Text="!gps list commands" Margin="5" />
         <TextBlock Grid.Column="1" Grid.Row ="20" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists buy commands that are enabled." Margin="5"/>
