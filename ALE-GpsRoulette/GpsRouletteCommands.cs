@@ -21,6 +21,7 @@ using Sandbox.Game;
 using Sandbox.Game.Multiplayer;
 using Sandbox.ModAPI;
 using Sandbox.Game.Screens.Helpers;
+using Sandbox.Game.GameSystems.BankingAndCurrency;
 
 namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
@@ -31,27 +32,93 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         public GpsRoulettePlugin Plugin => (GpsRoulettePlugin) Context.Plugin;
 
+        [Command("help", "List active commands to buy GPS.")]
+        [Permission(MyPromoteLevel.None)]
+        public void Help() {
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("The GPS-Roulette plugin allows you to purchase gps locations of other players in exchange for space credits to improve PVP on certain servers and make the economy system more useful.");
+            sb.AppendLine();
+            sb.AppendLine("There are different commands you can use to purchase said gps. You can find them by typing '!gps list commands' in chat or in the list below.");
+            sb.AppendLine();
+            sb.AppendLine("To purchase a players location the following criteria must be met:");
+
+            var lastOnlineMinutes = Plugin.Config.LastOnlineMinutes;
+
+            if (lastOnlineMinutes <= 0)
+                sb.AppendLine("- The player must be online.");
+            else
+                sb.AppendLine("- The player must be online or offline for less then "+ lastOnlineMinutes.ToString("#,##0") + " minutes.");
+
+            var offlineHours = Plugin.Config.OfflineLongerThanHours;
+
+            if(offlineHours > 0)
+                sb.AppendLine("-- Or the player is inactive (offline) for more than "+ offlineHours.ToString("#,##0") + " hours.");
+            
+            if (!Plugin.Config.IncludePlayersWithoutFaction)
+                sb.AppendLine("- The player must be in a faction.");
+
+            var minPCU = Plugin.Config.MinPCUToBeFound;
+            if(minPCU > 0)
+                sb.AppendLine("- The player must have at least " + minPCU.ToString("#,##0") + " PCU.");
+
+            sb.AppendLine();
+
+            sb.AppendLine("You can purchase the following locations:");
+            sb.AppendLine("- If the player is online you get their location.");
+            sb.AppendLine("- If the player is offline you get the location of their body.");
+            sb.AppendLine("- If no body is found you get the location they last died at (on logout).");
+            sb.AppendLine("- If the player is an NPC you get the location of their NPC station.");
+
+            sb.AppendLine();
+
+            sb.AppendLine("Additional information:");
+
+            var notified = Plugin.Config.NotifySoldPlayer;
+
+            if(notified)
+                sb.AppendLine("- If your location was bought you will be notified on screen when online.");
+            else
+                sb.AppendLine("- If your location was bought you will not get any notifitication about it.");
+
+            var offset = Plugin.Config.GpsOffsetFromPlayerKm;
+
+            if(offset == 0)
+                sb.AppendLine("- Bought locations will be directly on target.");
+            else
+                sb.AppendLine("- Bought locations will be about "+offset.ToString("#,##0")+" km away from the target.");
+
+            var filterFaction = Plugin.Config.FilterFactionMembers;
+
+            if(filterFaction)
+                sb.AppendLine("- Locations of faction members will be ignored.");
+            else
+                sb.AppendLine("- You can also randomly purchase the location of a faction member.");
+
+            sb.AppendLine();
+
+            sb.AppendLine("Currently active commands:");
+            AddCommandsToSb(sb,"- ");
+
+            if (Context.Player == null) {
+
+                Context.Respond($"GPS Roulette help");
+                Context.Respond(sb.ToString());
+
+            } else {
+
+                ModCommunication.SendMessageTo(new DialogMessage("GPS Roulette help", "", sb.ToString()), Context.Player.SteamUserId);
+            }
+        }
+
         [Command("list commands", "List active commands to buy GPS.")]
         [Permission(MyPromoteLevel.None)]
         public void ListCommands() {
 
             StringBuilder sb = new StringBuilder();
 
-            var price = Plugin.Config.PriceCreditsRandom;
-            if (price >= 0)
-                sb.AppendLine("!gps buy random -- for " + price.ToString("#,##0") + " SC");
-
-             price = Plugin.Config.PriceCreditsOnline;
-            if (price >= 0)
-                sb.AppendLine("!gps buy online -- for " + price.ToString("#,##0") + " SC");
-
-             price = Plugin.Config.PriceCreditsInactive;
-            if (price >= 0)
-                sb.AppendLine("!gps buy inactive -- for " + price.ToString("#,##0") + " SC");
-
-             price = Plugin.Config.PriceCreditsNPC;
-            if (price >= 0)
-                sb.AppendLine("!gps buy npc -- for " + price.ToString("#,##0") + " SC");
+            AddCommandsToSb(sb);
 
             if (Context.Player == null) {
 
@@ -64,6 +131,24 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             }
         }
 
+        private void AddCommandsToSb(StringBuilder sb, string prefix = "") {
+
+            var price = Plugin.Config.PriceCreditsRandom;
+            if (price >= 0)
+                sb.AppendLine(prefix+"!gps buy random -- for " + price.ToString("#,##0") + " SC");
+
+            price = Plugin.Config.PriceCreditsOnline;
+            if (price >= 0)
+                sb.AppendLine(prefix + "!gps buy online -- for " + price.ToString("#,##0") + " SC");
+
+            price = Plugin.Config.PriceCreditsInactive;
+            if (price >= 0)
+                sb.AppendLine(prefix + "!gps buy inactive -- for " + price.ToString("#,##0") + " SC");
+
+            price = Plugin.Config.PriceCreditsNPC;
+            if (price >= 0)
+                sb.AppendLine(prefix + "!gps buy npc -- for " + price.ToString("#,##0") + " SC");
+        }
 
         [Command("buy random", "Provides a random GPS coord in exchange for credits.")]
         [Permission(MyPromoteLevel.None)]
@@ -119,6 +204,13 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             var steamId = new SteamIdCooldownKey(player.SteamUserId);
             var cooldownCommand = "buy";
 
+            long currentBalance = MyBankingSystem.GetBalance(player.IdentityId);
+
+            if (currentBalance < price) {
+                Context.Respond("You dont have enough credits to effort a GPS! You need at least " + price.ToString("#,##0") + " SC.");
+                return;
+            }
+
             if (!cooldownManager.CheckCooldown(steamId, cooldownCommand, out long remainingSeconds)) {
                 Log.Info("Cooldown for Player " + player.DisplayName + " still running! " + remainingSeconds + " seconds remaining!");
                 Context.Respond("Command is still on cooldown for " + remainingSeconds + " seconds.");
@@ -140,7 +232,15 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 var config = Plugin.Config;
                 var cooldownMs = config.CooldownMinutes * 60 * 1000L;
 
+                MyBankingSystem.ChangeBalance(player.IdentityId, -price);
+
                 cooldownManager.StartCooldown(steamId, cooldownCommand, cooldownMs);
+
+                Context.Respond("Purchase successful!");
+
+            } else {
+
+                Context.Respond("The location of the selected player could not be retrieved. The purchase was cancelled. Please try again.");
             }
         }
 
@@ -160,6 +260,12 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 return false;
 
             SendGps(position, identityId);
+
+            var location = position.Coords;
+            var otherPlayer = PlayerUtils.GetIdentityById(foundIdentity);
+
+            if(otherPlayer != null)
+                Log.Info("Player " + Context.Player.DisplayName + " bought GPS Location X: " + location.X + " Y: " + location.Y + " Z: " + location.Z + " of Player " + otherPlayer.DisplayName);
 
             if (config.NotifySoldPlayer) {
 
@@ -201,7 +307,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 return true;
             }
 
-            Context.Respond("Are you sure you buy a gps for '"+mode+"' for "+ price.ToString("#,##0") + " SC? Enter the command again within 30 seconds to confirm!");
+            Context.Respond("Are you sure you want to buy a gps for '"+mode+"' for "+ price.ToString("#,##0") + " SC? Make sure you read the information in !gps help. Enter the command again within 30 seconds to confirm!");
 
             cooldownManager.StartCooldown(cooldownKey, commandKey, 30 * 1000);
 
@@ -274,7 +380,69 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         }
 
         private Dictionary<long, List<PurchaseMode>> FindBuyables() {
-            throw new NotImplementedException();
+
+            var factionCollection = MySession.Static.Factions;
+            var playerCollection = MySession.Static.Players;
+            var identities = playerCollection.GetAllIdentities();
+            var result = new Dictionary<long, List<PurchaseMode>>();
+
+            var config = Plugin.Config;
+
+            foreach(var identity in identities) {
+
+                long identityId = identity.IdentityId;
+
+                MyFaction faction = factionCollection.GetPlayerFaction(identityId); 
+
+                /* If we dont want to include factionless players we have to filter here now */
+                if (!config.IncludePlayersWithoutFaction && faction == null) 
+                    continue;
+
+                /* If we dont want to find players below a certain PCU limit filter here now */
+                if (config.MinPCUToBeFound > identity.BlockLimits.PCUBuilt)
+                    continue;
+
+                var modes = new List<PurchaseMode>();
+
+                if (playerCollection.IdentityIsNpc(identityId)) {
+
+                    bool validFaction = faction != null && faction.IsEveryoneNpc() && faction.Stations.Count > 0;
+
+                    if (validFaction)
+                        modes.Add(PurchaseMode.NPC);
+
+                } else {
+
+                    if (playerCollection.IsPlayerOnline(identityId)) {
+
+                        modes.Add(PurchaseMode.ONLINE);
+
+                    } else {
+
+                        var lastSeen = PlayerUtils.GetLastSeenDate(identity);
+
+                        /* How many minutes ago does still count as online? */
+                        var maxOnlineDate = DateTime.Now.AddMinutes(-config.LastOnlineMinutes);
+
+                        if (lastSeen >= maxOnlineDate)
+                            modes.Add(PurchaseMode.ONLINE);
+
+                        if (config.OfflineLongerThanHours > 0) {
+
+                            /* How many hours ago does mean its inactive? */
+                            var minOnlineInactiveDate = DateTime.Now.AddHours(-config.OfflineLongerThanHours);
+
+                            if (lastSeen < minOnlineInactiveDate)
+                                modes.Add(PurchaseMode.INACTIVE);
+                        }
+                    }
+                }
+
+                if (modes.Count > 0)
+                    result.Add(identityId, modes);
+            }
+
+            return result;
         }
 
         private Dictionary<long, List<PurchaseMode>> FindFilteredBuyables(PurchaseMode mode) {

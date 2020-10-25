@@ -15,7 +15,6 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private int _offlineLongerThanHours = 24 * 7; //offline players offline for more than 7 days
 
         private bool _includePlayersWithoutFaction = false; //Ignore players without faction
-        private bool _includeOfflinePlayers = false; //Ignore players that are offline
         private bool _filterFactionMembers = true; //Do not buy GPS of faction Members
 
         private bool _notifySoldPlayer = true; //Dont notify the player someone got their gps
@@ -32,7 +31,6 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public int LastOnlineMinutes { get => _lastOnlineMinutes; set => SetValue(ref _lastOnlineMinutes, value); }
         public int OfflineLongerThanHours { get => _offlineLongerThanHours; set => SetValue(ref _offlineLongerThanHours, value); }
         public bool IncludePlayersWithoutFaction { get => _includePlayersWithoutFaction; set => SetValue(ref _includePlayersWithoutFaction, value); }
-        public bool IncludeOfflinePlayers { get => _includeOfflinePlayers; set => SetValue(ref _includeOfflinePlayers, value); }
         public bool FilterFactionMembers { get => _filterFactionMembers; set => SetValue(ref _filterFactionMembers, value); }
         public bool NotifySoldPlayer { get => _notifySoldPlayer; set => SetValue(ref _notifySoldPlayer, value); }
         public int MinPCUToBeFound { get => _minPCUToBeFound; set => SetValue(ref _minPCUToBeFound, value); }
