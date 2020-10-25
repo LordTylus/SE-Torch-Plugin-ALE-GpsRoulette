@@ -1,13 +1,9 @@
 ﻿using ALE_Core.Cooldown;
-using ALE_Core.GridExport;
 using ALE_Core.Utils;
 using NLog;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Character;
 using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Torch.Commands;
@@ -15,13 +11,15 @@ using Torch.Commands.Permissions;
 using Torch.Mod;
 using Torch.Mod.Messages;
 using VRage.Game.ModAPI;
-using VRageMath;
 using VRage.Utils;
 using Sandbox.Game;
 using Sandbox.Game.Multiplayer;
 using Sandbox.ModAPI;
 using Sandbox.Game.Screens.Helpers;
 using Sandbox.Game.GameSystems.BankingAndCurrency;
+using VRageMath;
+using Sandbox.Game.Entities;
+using VRage.Game;
 
 namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
@@ -247,14 +245,25 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private bool BuyRandomFromDict(Dictionary<long, List<PurchaseMode>> buyables) {
 
             List<long> buyablesAsList = new List<long>(buyables.Keys);
-            buyablesAsList.ShuffleList();
-
-            long identityId = Context.Player.IdentityId;
-            long foundIdentity = buyablesAsList.First();
 
             var config = Plugin.Config;
+            MyGps position = null;
 
-            MyGps position = FindPositionOfPlayer(foundIdentity);
+            long identityId = Context.Player.IdentityId;
+            long foundIdentity = 0L;
+
+            /* Try 5 times to make sure the player gets something. If we wont find anything after 5 times we stop */
+            for (int i = 0; i < 5; i++) {
+
+                buyablesAsList.ShuffleList();
+               
+                foundIdentity = buyablesAsList.First();
+
+                position = FindPositionOfPlayer(foundIdentity);
+
+                if (position != null)
+                    break;
+            }
 
             if (position == null)
                 return false;
@@ -269,16 +278,99 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             if (config.NotifySoldPlayer) {
 
+                var message = "Watch out! Someone bought your current location. He will be here soon!";
+
                 MyVisualScriptLogicProvider.ShowNotification(
-                    "Watch out! Someone bought your current location. He will be here soon!",
-                    5000, "Red", foundIdentity);
+                    message,10000, MyFontEnum.White, foundIdentity);
+
+                MyVisualScriptLogicProvider.SendChatMessage(
+                    message, Plugin.Torch.Config.ChatName, foundIdentity, MyFontEnum.Red);
             }
 
             return true;
         }
 
         private MyGps FindPositionOfPlayer(long foundIdentity) {
-            throw new NotImplementedException();
+
+            var identity = PlayerUtils.GetIdentityById(foundIdentity);
+
+            if (identity == null) {
+                Log.Error("Could not find Identity to ID #"+foundIdentity);
+                return null;
+            }
+
+            var factionCollection = MySession.Static.Factions;
+            var playerCollection = MySession.Static.Players;
+
+            if (playerCollection.IdentityIsNpc(foundIdentity)) {
+
+                var faction = factionCollection.GetPlayerFaction(foundIdentity);
+
+                if (faction == null) {
+                    Log.Error("NPC Identity "+ identity.DisplayName + " has no faction!");
+                    return null;
+                }
+
+                var stations = faction.Stations;
+
+                if (stations.Count == 0) {
+                    Log.Error("NPC Faction "+ faction.Tag + " has no stations!");
+                    return null;
+                }
+
+                var stationsList = new List<MyStation>(stations);
+                stationsList.ShuffleList();
+
+                var station = stations.First();
+
+                return CreateGps(station.Position, identity);
+            }
+
+            var character = identity.Character;
+
+            if (character == null) {
+
+                if (!playerCollection.IsPlayerOnline(foundIdentity)) {
+
+                    /* If player is not online look for him in beds cryopods etc. */
+                    foreach (var grid in MyEntities.GetEntities().OfType<MyCubeGrid>().ToList()) {
+                        foreach (var controller in grid.GetFatBlocks<MyShipController>()) {
+
+                            var pilot = controller.Pilot;
+
+                            if (pilot != null && pilot.GetPlayerIdentityId() == foundIdentity) 
+                                return CreateGps(controller.PositionComp.GetPosition(), identity);
+                        }
+                    }
+                }
+
+                if (identity.LastDeathPosition != null)
+                    return CreateGps(identity.LastDeathPosition.Value, identity);
+
+                Log.Error("Player "+identity.DisplayName+" has no last death location!");
+
+                return null;
+            }
+
+            return CreateGps(character.PositionComp.GetPosition(), identity);
+        }
+
+        private MyGps CreateGps(Vector3D location, MyIdentity identity) {
+
+            MyGps gps = new MyGps {
+                Coords = location,
+                Name = "Location of " + identity.DisplayName+" #" + DateTimeOffset.Now.ToUnixTimeMilliseconds(),
+                DisplayName = "Location of " + identity.DisplayName,
+                Description = "Bought via GPS Roulette plugin",
+                GPSColor = Color.Cyan,
+                IsContainerGPS = true,
+                ShowOnHud = true,
+                DiscardAt = new TimeSpan?(),
+                AlwaysVisible = true
+            };
+            gps.UpdateHash();
+
+            return gps;
         }
 
         private bool SendGps(MyGps gps, long playerId) {
