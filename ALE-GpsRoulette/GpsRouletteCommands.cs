@@ -278,7 +278,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             if (config.NotifySoldPlayer) {
 
-                var message = "Watch out! Someone bought your current location. He will be here soon!";
+                var message = "Watch out! Someone bought your current location. They will be here soon!";
 
                 MyVisualScriptLogicProvider.ShowNotification(
                     message,10000, MyFontEnum.White, foundIdentity);
@@ -357,6 +357,15 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private MyGps CreateGps(Vector3D location, MyIdentity identity) {
 
+            var offset = Plugin.Config.GpsOffsetFromPlayerKm;
+
+            if(offset > 0) {
+
+                double distance = offset * 1000.0;
+
+                location = FindRandomPosition(location, distance);
+            }
+
             MyGps gps = new MyGps {
                 Coords = location,
                 Name = "Location of " + identity.DisplayName+" #" + DateTimeOffset.Now.ToUnixTimeMilliseconds(),
@@ -371,6 +380,19 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             gps.UpdateHash();
 
             return gps;
+        }
+
+        private static Vector3D FindRandomPosition(Vector3D origin, double distance) {
+
+            double randomX = MyUtils.GetRandomDouble(-1, 1);
+            double randomY = MyUtils.GetRandomDouble(-1, 1);
+            double randomZ = MyUtils.GetRandomDouble(-1, 1);
+
+            Vector3D random = new Vector3D(randomX, randomY, randomZ);
+
+            double distanceToOrigin = random.Length();
+
+            return origin + (random * (distance / distanceToOrigin));
         }
 
         private bool SendGps(MyGps gps, long playerId) {
