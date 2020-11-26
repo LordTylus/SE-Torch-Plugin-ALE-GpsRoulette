@@ -61,7 +61,7 @@
         <TextBlock Grid.Column="0" Grid.Row ="4" VerticalAlignment="Center" Text="Cost in credits to buy GPS of NPC (-1 to disable):" Margin="5"/>
         <TextBox Name="PriceCreditsNPC" Grid.Column="1" Grid.Row ="4" Grid.ColumnSpan="2" Margin="5" Text="{Binding PriceCreditsNPC}"/>
 
-        <TextBlock Grid.Column="0" Grid.Row ="5" VerticalAlignment="Center" TextWrapping="Wrap" Text="Cooldown before a player can buy an other GPS (minutes)" Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="5" VerticalAlignment="Center" TextWrapping="Wrap" Text="Cooldown before a player can buy another GPS (minutes)" Margin="5"/>
         <TextBox Name="CooldownMinutes" Grid.Column="1" Grid.Row ="5" Grid.ColumnSpan="2" Margin="5" Text="{Binding CooldownMinutes}"/>
 
         <TextBlock Grid.Column="0" Grid.Row ="6" VerticalAlignment="Center" TextWrapping="Wrap" Text="Only share players that are online or offline for max (minutes):" Margin="5"/>
