@@ -21,6 +21,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private int _minPCUToBeFound = 10_000; //People below 10k PCU wont be purchasable
         private int _gpsOffsetFromPlayerKm = 0; //Spot on
+        private int _gpsOffsetFromPlayerKmMax = 0; //Spot on
 
         public long PriceCreditsRandom { get => _priceCreditsRandom; set => SetValue(ref _priceCreditsRandom, value); }
         public long PriceCreditsOnline { get => _priceCreditsOnline; set => SetValue(ref _priceCreditsOnline, value); }
@@ -36,5 +37,6 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public int MinPCUToBeFound { get => _minPCUToBeFound; set => SetValue(ref _minPCUToBeFound, value); }
         public int GpsOffsetFromPlayerKm { get => _gpsOffsetFromPlayerKm; set => SetValue(ref _gpsOffsetFromPlayerKm, value); }
 
+        public int GpsOffsetFromPlayerKmMax { get => _gpsOffsetFromPlayerKmMax; set => SetValue(ref _gpsOffsetFromPlayerKmMax, value); }
     }
 }

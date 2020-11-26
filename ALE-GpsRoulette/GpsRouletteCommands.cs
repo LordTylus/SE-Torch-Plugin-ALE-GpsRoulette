@@ -83,9 +83,20 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             var offset = Plugin.Config.GpsOffsetFromPlayerKm;
 
             if(offset == 0)
-                sb.AppendLine("- Bought locations will be directly on target.");
+                sb.AppendLine("- Bought locations will minimum be directly on target.");
             else
-                sb.AppendLine("- Bought locations will be about "+offset.ToString("#,##0")+" km away from the target.");
+                sb.AppendLine("- Bought locations will minimum be about " + offset.ToString("#,##0")+" km away from the target.");
+
+            var offsetMax = Plugin.Config.GpsOffsetFromPlayerKmMax;
+
+            if (offsetMax < offset)
+                offsetMax = offset;
+
+            if (offsetMax == 0)
+                sb.AppendLine("- Bought locations will maximum be directly on target.");
+            else
+                sb.AppendLine("- Bought locations will maximum be about " + offsetMax.ToString("#,##0") + " km away from the target.");
+
 
             var filterFaction = Plugin.Config.FilterFactionMembers;
 
@@ -358,12 +369,17 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private MyGps CreateGps(Vector3D location, MyIdentity identity) {
 
             var offset = Plugin.Config.GpsOffsetFromPlayerKm;
+            var offsetMax = Plugin.Config.GpsOffsetFromPlayerKmMax;
 
-            if(offset > 0) {
+            if (offsetMax < offset)
+                offsetMax = offset;
+
+            if (offset > 0) {
 
                 double distance = offset * 1000.0;
+                double distanceMax = offsetMax * 1000.0;
 
-                location = FindRandomPosition(location, distance);
+                location = FindRandomPosition(location, distance, distanceMax);
             }
 
             MyGps gps = new MyGps {
@@ -382,7 +398,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return gps;
         }
 
-        private static Vector3D FindRandomPosition(Vector3D origin, double distance) {
+        private static Vector3D FindRandomPosition(Vector3D origin, double min, double max) {
 
             double randomX = MyUtils.GetRandomDouble(-1, 1);
             double randomY = MyUtils.GetRandomDouble(-1, 1);
@@ -391,6 +407,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             Vector3D random = new Vector3D(randomX, randomY, randomZ);
 
             double distanceToOrigin = random.Length();
+
+            double distance = MyUtils.GetRandomDouble(min, max);
 
             return origin + (random * (distance / distanceToOrigin));
         }
