@@ -23,6 +23,10 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private int _gpsOffsetFromPlayerKm = 0; //Spot on
         private int _gpsOffsetFromPlayerKmMax = 0; //Spot on
 
+        private int _minPCUToBuy = 0;
+        private int _minOnlineMinutesToBuy = 0;
+        private int _minPlayerOnlineToBuy = 0;
+
         public long PriceCreditsRandom { get => _priceCreditsRandom; set => SetValue(ref _priceCreditsRandom, value); }
         public long PriceCreditsOnline { get => _priceCreditsOnline; set => SetValue(ref _priceCreditsOnline, value); }
         public long PriceCreditsInactive { get => _priceCreditsInactive; set => SetValue(ref _priceCreditsInactive, value); }
@@ -36,7 +40,10 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public bool NotifySoldPlayer { get => _notifySoldPlayer; set => SetValue(ref _notifySoldPlayer, value); }
         public int MinPCUToBeFound { get => _minPCUToBeFound; set => SetValue(ref _minPCUToBeFound, value); }
         public int GpsOffsetFromPlayerKm { get => _gpsOffsetFromPlayerKm; set => SetValue(ref _gpsOffsetFromPlayerKm, value); }
-
         public int GpsOffsetFromPlayerKmMax { get => _gpsOffsetFromPlayerKmMax; set => SetValue(ref _gpsOffsetFromPlayerKmMax, value); }
+
+        public int MinPCUToBuy { get => _minPCUToBuy; set => SetValue(ref _minPCUToBuy, value); }
+        public int MinOnlineMinutesToBuy { get => _minOnlineMinutesToBuy; set => SetValue(ref _minOnlineMinutesToBuy, value); }
+        public int MinPlayerOnlineToBuy { get => _minPlayerOnlineToBuy; set => SetValue(ref _minPlayerOnlineToBuy, value); }
     }
 }

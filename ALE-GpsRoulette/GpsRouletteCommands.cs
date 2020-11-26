@@ -61,6 +61,25 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             if(minPCU > 0)
                 sb.AppendLine("- The player must have at least " + minPCU.ToString("#,##0") + " PCU.");
 
+            var minPCUToBuy = Plugin.Config.MinPCUToBuy;
+            var minOnlineTime = Plugin.Config.MinOnlineMinutesToBuy;
+            var minPlayersOnline = Plugin.Config.MinPlayerOnlineToBuy;
+
+            if (minPCUToBuy > 0 || minOnlineTime > 0 || minPlayersOnline > 0) {
+
+                sb.AppendLine();
+                sb.AppendLine("To be able to purchase gps you must meet the following citeria:");
+
+                if (minPCUToBuy > 0)
+                    sb.AppendLine("- You must have at least " + minPCUToBuy.ToString("#,##0") + " PCU.");
+
+                if (minOnlineTime > 0)
+                    sb.AppendLine("- You must be online for at least " + minOnlineTime.ToString("#,##0") + " minutes.");
+
+                if (minPlayersOnline > 0)
+                    sb.AppendLine("- At least " + minPlayersOnline.ToString("#,##0") + " players must be online to buy random/online gps.");
+            }
+
             sb.AppendLine();
 
             sb.AppendLine("You can purchase the following locations:");
@@ -207,8 +226,57 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 return;
             }
 
-            var player = Context.Player;
+            if(mode == PurchaseMode.ONLINE || mode == PurchaseMode.RANDOM) {
 
+                var minPlayersOnline = Plugin.Config.MinPlayerOnlineToBuy;
+
+                int onlineCount = MySession.Static.Players.GetOnlinePlayerCount();
+
+                if(onlineCount < minPlayersOnline) {
+
+                    Context.Respond("For Online/Random gps at least "+ minPlayersOnline + " players must be online!");
+                    return;
+                }
+            }
+
+            var player = Context.Player;
+            var identity = PlayerUtils.GetIdentityById(player.IdentityId);
+
+            var minOnlineTime = Plugin.Config.MinOnlineMinutesToBuy;
+
+            if(minOnlineTime > 0) {
+
+                var lastSeen = PlayerUtils.GetLastSeenDate(identity);
+                var minOnlineDate = DateTime.Now.AddMinutes(-Plugin.Config.MinOnlineMinutesToBuy);
+
+                if (lastSeen > minOnlineDate) {
+
+                    int differenceSeconds = (int) lastSeen.Subtract(minOnlineDate).TotalSeconds;
+
+                    int minutes = (differenceSeconds / 60);
+                    int seconds = differenceSeconds % 60;
+
+                    Context.Respond("You are not online for long enough! You must be online for at least " + minutes.ToString("00") + ":" + seconds.ToString("00") + " more minutes!");
+
+                    return;
+                }
+            }
+
+            var minPCUToBuy = Plugin.Config.MinPCUToBuy;
+
+            if(minPCUToBuy > 0) {
+
+                var pcuBuilt = identity.BlockLimits.PCUBuilt;
+                var neededPcu = Plugin.Config.MinPCUToBuy;
+
+                if (neededPcu > pcuBuilt) {
+
+                    Context.Respond("You dont have enough PCU to buy! You need at least " + (neededPcu - pcuBuilt) + " more!");
+
+                    return;
+                }
+            }
+            
             var cooldownManager = Plugin.CooldownManager;
             var steamId = new SteamIdCooldownKey(player.SteamUserId);
             var cooldownCommand = "buy";
