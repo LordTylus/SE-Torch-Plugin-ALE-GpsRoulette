@@ -598,13 +598,16 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 if (!config.IncludePlayersWithoutFaction && faction == null) 
                     continue;
 
+                bool isNpc = playerCollection.IdentityIsNpc(identityId);
+                bool mustCheckPcu = !isNpc || config.MinPCUAlsoForNPC;
+
                 /* If we dont want to find players below a certain PCU limit filter here now */
-                if (config.MinPCUToBeFound > identity.BlockLimits.PCUBuilt)
+                if (mustCheckPcu && config.MinPCUToBeFound > identity.BlockLimits.PCUBuilt)
                     continue;
 
                 var modes = new List<PurchaseMode>();
 
-                if (playerCollection.IdentityIsNpc(identityId)) {
+                if (isNpc) {
 
                     bool validFaction = faction != null && faction.IsEveryoneNpc() && faction.Stations.Count > 0;
 

@@ -22,6 +22,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private int _minPCUToBeFound = 10_000; //People below 10k PCU wont be purchasable
         private int _gpsOffsetFromPlayerKm = 0; //Spot on
         private int _gpsOffsetFromPlayerKmMax = 0; //Spot on
+        private bool _minPCUAlsoForNPC = true; //NPCs have to repsect the MinPCU as well. 
 
         private int _minPCUToBuy = 0;
         private int _minOnlineMinutesToBuy = 0;
@@ -41,6 +42,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public int MinPCUToBeFound { get => _minPCUToBeFound; set => SetValue(ref _minPCUToBeFound, value); }
         public int GpsOffsetFromPlayerKm { get => _gpsOffsetFromPlayerKm; set => SetValue(ref _gpsOffsetFromPlayerKm, value); }
         public int GpsOffsetFromPlayerKmMax { get => _gpsOffsetFromPlayerKmMax; set => SetValue(ref _gpsOffsetFromPlayerKmMax, value); }
+        public bool MinPCUAlsoForNPC { get => _minPCUAlsoForNPC; set => SetValue(ref _minPCUAlsoForNPC, value); }
 
         public int MinPCUToBuy { get => _minPCUToBuy; set => SetValue(ref _minPCUToBuy, value); }
         public int MinOnlineMinutesToBuy { get => _minOnlineMinutesToBuy; set => SetValue(ref _minOnlineMinutesToBuy, value); }
