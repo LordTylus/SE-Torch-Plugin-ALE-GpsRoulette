@@ -25,6 +25,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private bool _minPCUAlsoForNPC = true; //NPCs have to repsect the MinPCU as well. 
 
         private int _minPCUToBuy = 0;
+        private bool _mustBeInFactionToBuy = false;
         private int _minOnlineMinutesToBuy = 0;
         private int _minPlayerOnlineToBuy = 0;
 
@@ -45,6 +46,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public bool MinPCUAlsoForNPC { get => _minPCUAlsoForNPC; set => SetValue(ref _minPCUAlsoForNPC, value); }
 
         public int MinPCUToBuy { get => _minPCUToBuy; set => SetValue(ref _minPCUToBuy, value); }
+        public bool MustBeInFactionToBuy { get => _mustBeInFactionToBuy; set => SetValue(ref _mustBeInFactionToBuy, value); }
         public int MinOnlineMinutesToBuy { get => _minOnlineMinutesToBuy; set => SetValue(ref _minOnlineMinutesToBuy, value); }
         public int MinPlayerOnlineToBuy { get => _minPlayerOnlineToBuy; set => SetValue(ref _minPlayerOnlineToBuy, value); }
     }

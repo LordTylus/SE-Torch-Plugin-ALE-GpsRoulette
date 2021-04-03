@@ -64,8 +64,10 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             var minPCUToBuy = Plugin.Config.MinPCUToBuy;
             var minOnlineTime = Plugin.Config.MinOnlineMinutesToBuy;
             var minPlayersOnline = Plugin.Config.MinPlayerOnlineToBuy;
+            var mustBeInFaction = Plugin.Config.MustBeInFactionToBuy;
+            var cooldown = Plugin.Config.CooldownMinutes;
 
-            if (minPCUToBuy > 0 || minOnlineTime > 0 || minPlayersOnline > 0) {
+            if (minPCUToBuy > 0 || minOnlineTime > 0 || minPlayersOnline > 0 || mustBeInFaction || cooldown > 0) {
 
                 sb.AppendLine();
                 sb.AppendLine("To be able to purchase gps you must meet the following citeria:");
@@ -76,8 +78,14 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 if (minOnlineTime > 0)
                     sb.AppendLine("- You must be online for at least " + minOnlineTime.ToString("#,##0") + " minutes.");
 
+                if(cooldown > 0)
+                    sb.AppendLine("- You must not have bought a GPS within the last " + cooldown.ToString("#,##0") + " minutes.");
+
                 if (minPlayersOnline > 0)
                     sb.AppendLine("- At least " + minPlayersOnline.ToString("#,##0") + " players must be online to buy random/online gps.");
+
+                if(mustBeInFaction)
+                    sb.AppendLine("- Be part of a faction.");
             }
 
             sb.AppendLine();
@@ -226,7 +234,21 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 return;
             }
 
-            if(mode == PurchaseMode.ONLINE || mode == PurchaseMode.RANDOM) {
+            var player = Context.Player;
+            var identity = PlayerUtils.GetIdentityById(player.IdentityId);
+
+            if (Plugin.Config.MustBeInFactionToBuy) {
+
+                var faction = FactionUtils.GetPlayerFaction(identity.IdentityId);
+
+                if(faction == null) {
+
+                    Context.Respond("You must be part of a Faction to buy GPS!");
+                    return;
+                }
+            }
+
+            if (mode == PurchaseMode.ONLINE || mode == PurchaseMode.RANDOM) {
 
                 var minPlayersOnline = Plugin.Config.MinPlayerOnlineToBuy;
 
@@ -238,9 +260,6 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     return;
                 }
             }
-
-            var player = Context.Player;
-            var identity = PlayerUtils.GetIdentityById(player.IdentityId);
 
             var minOnlineTime = Plugin.Config.MinOnlineMinutesToBuy;
 
