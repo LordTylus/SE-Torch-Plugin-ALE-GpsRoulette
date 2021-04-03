@@ -169,21 +169,73 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private void AddCommandsToSb(StringBuilder sb, string prefix = "") {
 
+            bool shouldShowAdjustedPrices = false;
+            MyIdentity identity = null;
+
+            if (Plugin.Config.UseDynamicPrices) {
+
+                var player = Context.Player;
+
+                if (player != null) {
+
+                    identity = PlayerUtils.GetIdentityById(player.IdentityId);
+
+                    if (FactionUtils.GetPlayerFaction(identity.IdentityId) != null)
+                        shouldShowAdjustedPrices = true;
+                }
+            }
+
+            if (shouldShowAdjustedPrices) {
+
+                sb.AppendLine();
+
+                sb.AppendLine("Prices change dynamically relative to the number of members your faction has.");
+                sb.AppendLine("Actual Price = baseprice + baseprice * multiplier * (Number of Factionmembers - 1)");
+                sb.AppendLine("Current Multiplier is " + Plugin.Config.DynamicPriceMultiplier.ToString("#,##0.00"));
+                
+                sb.AppendLine();
+            }
+
             var price = Plugin.Config.PriceCreditsRandom;
-            if (price >= 0)
-                sb.AppendLine(prefix+"!gps buy random -- for " + price.ToString("#,##0") + " SC");
+            if (price >= 0) {
+
+                sb.AppendLine(prefix + "!gps buy random -- for " + price.ToString("#,##0") + " SC (Baseprice)");
+
+                if(shouldShowAdjustedPrices)
+                    sb.AppendLine(prefix + "   Your would pay "+ GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+            }
 
             price = Plugin.Config.PriceCreditsOnline;
-            if (price >= 0)
-                sb.AppendLine(prefix + "!gps buy online -- for " + price.ToString("#,##0") + " SC");
+            if (price >= 0) {
+                
+                sb.AppendLine(prefix + "!gps buy online -- for " + price.ToString("#,##0") + " SC (Baseprice)");
+                
+                if (shouldShowAdjustedPrices)
+                    sb.AppendLine(prefix + "   Your would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+            }
 
             price = Plugin.Config.PriceCreditsInactive;
-            if (price >= 0)
-                sb.AppendLine(prefix + "!gps buy inactive -- for " + price.ToString("#,##0") + " SC");
+            if (price >= 0) {
+                
+                sb.AppendLine(prefix + "!gps buy inactive -- for " + price.ToString("#,##0") + " SC (Baseprice)");
+                
+                if (shouldShowAdjustedPrices)
+                    sb.AppendLine(prefix + "   You would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+            }
 
             price = Plugin.Config.PriceCreditsNPC;
-            if (price >= 0)
-                sb.AppendLine(prefix + "!gps buy npc -- for " + price.ToString("#,##0") + " SC");
+            if (price >= 0) {
+
+                sb.AppendLine(prefix + "!gps buy npc -- for " + price.ToString("#,##0") + " SC (Baseprice)");
+
+                if (shouldShowAdjustedPrices)
+                    sb.AppendLine(prefix + "   You would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+            }
+
+            if (shouldShowAdjustedPrices) {
+                sb.AppendLine();
+                sb.AppendLine("Keep in mind: These prices change relative to the number of members your faction has.");
+            }
         }
 
         [Command("buy random", "Provides a random GPS coord in exchange for credits.")]
@@ -236,6 +288,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             var player = Context.Player;
             var identity = PlayerUtils.GetIdentityById(player.IdentityId);
+
+            price = GetAdjustedPriceForPlayer(price, identity);
 
             if (Plugin.Config.MustBeInFactionToBuy) {
 
@@ -338,6 +392,23 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
                 Context.Respond("The location of the selected player could not be retrieved. The purchase was cancelled. Please try again.");
             }
+        }
+
+        private long GetAdjustedPriceForPlayer(long price, MyIdentity identity) {
+
+            if (!Plugin.Config.UseDynamicPrices)
+                return price;
+
+            var faction = FactionUtils.GetPlayerFaction(identity.IdentityId);
+
+            if (faction == null)
+                return price;
+
+            int numberOfMembers = faction.Members.Count;
+
+            float priceMultiplier = Plugin.Config.DynamicPriceMultiplier;
+
+            return price + (long) Math.Round(price * (numberOfMembers - 1) * priceMultiplier);
         }
 
         private bool BuyRandomFromDict(Dictionary<long, List<PurchaseMode>> buyables) {

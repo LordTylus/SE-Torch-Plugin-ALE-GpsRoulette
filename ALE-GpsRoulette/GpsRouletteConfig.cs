@@ -29,6 +29,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private int _minOnlineMinutesToBuy = 0;
         private int _minPlayerOnlineToBuy = 0;
 
+        private bool _useDynamicPrices = false;
+        private float _dynamicPriceMultiplier = 1.0F;
+
         public long PriceCreditsRandom { get => _priceCreditsRandom; set => SetValue(ref _priceCreditsRandom, value); }
         public long PriceCreditsOnline { get => _priceCreditsOnline; set => SetValue(ref _priceCreditsOnline, value); }
         public long PriceCreditsInactive { get => _priceCreditsInactive; set => SetValue(ref _priceCreditsInactive, value); }
@@ -49,5 +52,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public bool MustBeInFactionToBuy { get => _mustBeInFactionToBuy; set => SetValue(ref _mustBeInFactionToBuy, value); }
         public int MinOnlineMinutesToBuy { get => _minOnlineMinutesToBuy; set => SetValue(ref _minOnlineMinutesToBuy, value); }
         public int MinPlayerOnlineToBuy { get => _minPlayerOnlineToBuy; set => SetValue(ref _minPlayerOnlineToBuy, value); }
+
+        public bool UseDynamicPrices { get => _useDynamicPrices; set => SetValue(ref _useDynamicPrices, value); }
+        public float DynamicPriceMultiplier { get => _dynamicPriceMultiplier; set => SetValue(ref _dynamicPriceMultiplier, value); }
     }
 }
