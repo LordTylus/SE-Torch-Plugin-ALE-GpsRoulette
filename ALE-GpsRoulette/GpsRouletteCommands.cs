@@ -183,16 +183,13 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     if (FactionUtils.GetPlayerFaction(identity.IdentityId) != null)
                         shouldShowAdjustedPrices = true;
                 }
-            }
-
-            if (shouldShowAdjustedPrices) {
 
                 sb.AppendLine();
 
                 sb.AppendLine("Prices change dynamically relative to the number of members your faction has.");
                 sb.AppendLine("Actual Price = baseprice + baseprice * multiplier * (Number of Factionmembers - 1)");
                 sb.AppendLine("Current Multiplier is " + Plugin.Config.DynamicPriceMultiplier.ToString("#,##0.00"));
-                
+
                 sb.AppendLine();
             }
 
@@ -232,7 +229,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     sb.AppendLine(prefix + "   You would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
             }
 
-            if (shouldShowAdjustedPrices) {
+            if (Plugin.Config.UseDynamicPrices) {
                 sb.AppendLine();
                 sb.AppendLine("Keep in mind: These prices change relative to the number of members your faction has.");
             }
