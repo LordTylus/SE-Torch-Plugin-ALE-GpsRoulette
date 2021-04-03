@@ -202,7 +202,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 sb.AppendLine(prefix + "!gps buy random -- for " + price.ToString("#,##0") + " SC (Baseprice)");
 
                 if(shouldShowAdjustedPrices)
-                    sb.AppendLine(prefix + "   Your would pay "+ GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+                    sb.AppendLine(prefix + "   You would pay "+ GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
             }
 
             price = Plugin.Config.PriceCreditsOnline;
@@ -211,7 +211,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 sb.AppendLine(prefix + "!gps buy online -- for " + price.ToString("#,##0") + " SC (Baseprice)");
                 
                 if (shouldShowAdjustedPrices)
-                    sb.AppendLine(prefix + "   Your would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
+                    sb.AppendLine(prefix + "   You would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
             }
 
             price = Plugin.Config.PriceCreditsInactive;
