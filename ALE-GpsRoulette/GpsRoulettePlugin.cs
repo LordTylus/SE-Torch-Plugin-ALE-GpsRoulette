@@ -2,20 +2,17 @@
 using ALE_Core.Utils;
 using NLog;
 using Sandbox.Game;
-using Sandbox.Game.Entities;
 using Sandbox.Game.World;
-using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Controls;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
 using Torch.API.Plugins;
 using Torch.API.Session;
-using Torch.Commands;
 using Torch.Session;
 using VRage.Game;
 using VRage.Game.ModAPI;
@@ -27,6 +24,10 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
         
         public static readonly string COOLDOWN_COMMAND = "buy";
+        public static readonly string NOTIFICATION_COOLDOWN_COMMAND = "notify";
+
+        private static readonly int SKIPPED_UPDATES = 60;
+        private int updateCount = 0;
 
         private GpsRouletteControl _control;
         public UserControl GetControl() => _control ?? (_control = new GpsRouletteControl(this));
@@ -37,6 +38,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public CooldownManager CooldownManager { get; } = new CooldownManager();
         public CooldownManager CooldownManagerFactionChange { get; } = new CooldownManager();
         public CooldownManager ConfirmationManager { get; } = new CooldownManager();
+
+        private HashSet<EntityIdCooldownKey> NotificationQueue { get; } = new HashSet<EntityIdCooldownKey>();
+        private CooldownManager CooldownManagerNotificationQueue { get; } = new CooldownManager();
 
         public override void Init(ITorchBase torch) {
             
@@ -141,6 +145,69 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             } catch (IOException e) {
                 Log.Warn(e, "Configuration failed to save");
             }
+        }
+
+        public override void Update() {
+
+            base.Update();
+
+            /* If queue is empty take easy way out */
+            if (NotificationQueue.Count == 0)
+                return;
+
+            /* Only Check Every X Updates and not every. */
+            updateCount++;
+
+            if (updateCount < SKIPPED_UPDATES)
+                return;
+
+            updateCount = 0;
+
+            try {
+
+                foreach(EntityIdCooldownKey cooldownKey in NotificationQueue.ToList()) {
+
+                    if (CooldownManagerNotificationQueue.CheckCooldown(cooldownKey, NOTIFICATION_COOLDOWN_COMMAND, out _)) {
+
+                        long identityId = cooldownKey.EntityId;
+
+                        NotifyPlayer(identityId);
+
+                        NotificationQueue.Remove(cooldownKey);
+                    }
+                }
+
+            } catch(Exception e) {
+                Log.Error(e, "Error on Update!");
+            }
+        }
+
+        public void AddIdentityToNotifiticationQueue(long identityId) {
+
+            var cooldownKey = new EntityIdCooldownKey(identityId);
+            var delay = Config.NotifyDelaySeconds * 1000L;
+
+            CooldownManagerNotificationQueue.StartCooldown(cooldownKey, NOTIFICATION_COOLDOWN_COMMAND, delay);
+
+            NotificationQueue.Add(cooldownKey);
+        }
+
+        public void NotifyPlayer(long identityId) {
+
+            string message;
+
+            if (Config.NotifyDelaySeconds <= 0) 
+                message = "Watch out! Someone bought your current location. They will be here soon!";
+            else 
+                message = "Watch out! Someone bought your current location within the last " + Config.NotifyDelaySeconds.ToString("#,##0") + " seconds. They will be here soon!";
+
+            MyVisualScriptLogicProvider.ShowNotification(
+                message, 10000, MyFontEnum.White, identityId);
+
+            MyVisualScriptLogicProvider.SendChatMessage(
+                message, Torch.Config.ChatName, identityId, MyFontEnum.Red);
+
+            Log.Info("Identity " + identityId + " (" + PlayerUtils.GetPlayerNameById(identityId) + ") was Notified about their GPS being bought!");
         }
     }
 }

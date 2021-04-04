@@ -18,7 +18,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private bool _includePlayersWithoutFaction = false; //Ignore players without faction
         private bool _filterFactionMembers = true; //Do not buy GPS of faction Members
 
-        private bool _notifySoldPlayer = true; //Dont notify the player someone got their gps
+        private bool _notifySoldPlayer = true; //Notify the player someone got their gps
+        private int _notifyDelaySeconds = 0; //Notify immediately
 
         private int _minPCUToBeFound = 10_000; //People below 10k PCU wont be purchasable
         private int _gpsOffsetFromPlayerKm = 0; //Spot on
@@ -45,6 +46,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public bool IncludePlayersWithoutFaction { get => _includePlayersWithoutFaction; set => SetValue(ref _includePlayersWithoutFaction, value); }
         public bool FilterFactionMembers { get => _filterFactionMembers; set => SetValue(ref _filterFactionMembers, value); }
         public bool NotifySoldPlayer { get => _notifySoldPlayer; set => SetValue(ref _notifySoldPlayer, value); }
+        public int NotifyDelaySeconds { get => _notifyDelaySeconds; set => SetValue(ref _notifyDelaySeconds, value); }
         public int MinPCUToBeFound { get => _minPCUToBeFound; set => SetValue(ref _minPCUToBeFound, value); }
         public int GpsOffsetFromPlayerKm { get => _gpsOffsetFromPlayerKm; set => SetValue(ref _gpsOffsetFromPlayerKm, value); }
         public int GpsOffsetFromPlayerKmMax { get => _gpsOffsetFromPlayerKmMax; set => SetValue(ref _gpsOffsetFromPlayerKmMax, value); }

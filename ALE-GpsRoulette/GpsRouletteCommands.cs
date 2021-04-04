@@ -106,10 +106,18 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             var notified = Plugin.Config.NotifySoldPlayer;
 
-            if(notified)
+            if (notified) {
+
                 sb.AppendLine("- If your location was bought you will be notified on screen when online.");
-            else
+
+                var delay = Plugin.Config.NotifyDelaySeconds;
+
+                if(delay > 0)
+                    sb.AppendLine("- However the Notification is delayed by " + delay + " Seconds so attackers have a head start.");
+
+            } else {
                 sb.AppendLine("- If your location was bought you will not get any notifitication about it.");
+            }
 
             var offset = Plugin.Config.GpsOffsetFromPlayerKm;
 
@@ -454,13 +462,24 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             if (config.NotifySoldPlayer) {
 
-                var message = "Watch out! Someone bought your current location. They will be here soon!";
+                if (config.NotifyDelaySeconds <= 0) {
+                 
+                    Plugin.NotifyPlayer(foundIdentity);
 
-                MyVisualScriptLogicProvider.ShowNotification(
-                    message,10000, MyFontEnum.White, foundIdentity);
+                } else {
 
-                MyVisualScriptLogicProvider.SendChatMessage(
-                    message, Plugin.Torch.Config.ChatName, foundIdentity, MyFontEnum.Red);
+                    /* If anything goes wrong we notify immediately. Cannot risk the player getting no notification. */
+                    try {
+
+                        Plugin.AddIdentityToNotifiticationQueue(foundIdentity);
+
+                    } catch(Exception e) {
+
+                        Log.Error(e, "Error on adding to notify queue!");
+
+                        Plugin.NotifyPlayer(foundIdentity);
+                    }
+                }
             }
 
             return true;
