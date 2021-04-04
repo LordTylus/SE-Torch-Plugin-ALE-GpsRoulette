@@ -40,6 +40,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             sb.AppendLine();
             sb.AppendLine("There are different commands you can use to purchase said gps. You can find them by typing '!gps list commands' in chat or in the list below.");
             sb.AppendLine();
+            sb.AppendLine("When purchasing a random GPS you can use '!gps list chances' before purchase to see how likely it is to get something you want.");
+            sb.AppendLine();
             sb.AppendLine("To purchase a players location the following criteria must be met:");
 
             var lastOnlineMinutes = Plugin.Config.LastOnlineMinutes;
@@ -149,6 +151,11 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             sb.AppendLine("Currently active commands:");
             AddCommandsToSb(sb,"- ");
 
+            sb.AppendLine();
+
+            sb.AppendLine("Current Chances:");
+            AddChancesToSb(sb, "- ");
+
             if (Context.Player == null) {
 
                 Context.Respond($"GPS Roulette help");
@@ -245,6 +252,55 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 sb.AppendLine();
                 sb.AppendLine("Keep in mind: These prices change relative to the number of members your faction has.");
             }
+        }
+
+        [Command("list chances", "Lists chances of how likely it is to get a certain type of GPS.")]
+        [Permission(MyPromoteLevel.None)]
+        public void ListChances() {
+
+            StringBuilder sb = new StringBuilder();
+
+            AddChancesToSb(sb);
+
+            if (Context.Player == null) {
+
+                Context.Respond($"Current random GPS chances");
+                Context.Respond(sb.ToString());
+
+            } else {
+
+                ModCommunication.SendMessageTo(new DialogMessage("Current random GPS chances", "", sb.ToString()), Context.Player.SteamUserId);
+            }
+        }
+
+        private void AddChancesToSb(StringBuilder sb, string prefix = "") {
+
+            var buyables = FindFilteredBuyables(PurchaseMode.RANDOM);
+            int total = 0;
+
+            var dict = new Dictionary<PurchaseMode, int>();
+
+            foreach (var buyable in buyables) {
+
+                total += buyable.Value.Count;
+
+                foreach (var mode in buyable.Value) {
+
+                    if (!dict.ContainsKey(mode))
+                        dict.Add(mode, 1);
+                    else
+                        dict[mode]++;
+                }
+            }
+
+            foreach (var entry in dict) {
+
+                float percentage = 100.0F * entry.Value / total;
+
+                sb.AppendLine(prefix + entry.Value.ToString("#,##0") + "x " + entry.Key + "  --  (" + percentage.ToString("#,##0.0") + " %)");
+            }
+
+            sb.AppendLine("Total: " + total);
         }
 
         [Command("buy random", "Provides a random GPS coord in exchange for credits.")]
@@ -624,6 +680,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             }
 
             Context.Respond("Are you sure you want to buy a gps for '"+mode+"' for "+ price.ToString("#,##0") + " SC? Make sure you read the information in !gps help. Enter the command again within 30 seconds to confirm!");
+
+            if(mode == PurchaseMode.RANDOM)
+                Context.Respond("Make sure to check up your chances with '!gps list chances' to not get disappointed!");
 
             cooldownManager.StartCooldown(cooldownKey, commandKey, 30 * 1000);
 
