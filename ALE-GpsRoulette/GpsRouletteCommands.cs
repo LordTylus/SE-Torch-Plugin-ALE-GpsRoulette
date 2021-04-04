@@ -275,7 +275,13 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private void AddChancesToSb(StringBuilder sb, string prefix = "") {
 
-            var buyables = FindFilteredBuyables(PurchaseMode.RANDOM);
+            Dictionary<long, List<PurchaseMode>> buyables;
+
+            if (Context.Player == null)
+                buyables = FindFilteredBuyables(PurchaseMode.RANDOM);
+            else
+                buyables = FindFilteredBuyablesForPlayer(PurchaseMode.RANDOM);
+
             int total = 0;
 
             var dict = new Dictionary<PurchaseMode, int>();
