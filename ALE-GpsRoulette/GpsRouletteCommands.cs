@@ -66,8 +66,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             var minPlayersOnline = Plugin.Config.MinPlayerOnlineToBuy;
             var mustBeInFaction = Plugin.Config.MustBeInFactionToBuy;
             var cooldown = Plugin.Config.CooldownMinutes;
+            var cooldownFactionChange = Plugin.Config.CooldownMinutesFactionChange;
 
-            if (minPCUToBuy > 0 || minOnlineTime > 0 || minPlayersOnline > 0 || mustBeInFaction || cooldown > 0) {
+            if (minPCUToBuy > 0 || minOnlineTime > 0 || minPlayersOnline > 0 || mustBeInFaction || cooldown > 0 || cooldownFactionChange > 0) {
 
                 sb.AppendLine();
                 sb.AppendLine("To be able to purchase gps you must meet the following citeria:");
@@ -80,6 +81,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
                 if(cooldown > 0)
                     sb.AppendLine("- You must not have bought a GPS within the last " + cooldown.ToString("#,##0") + " minutes.");
+
+                if (cooldownFactionChange > 0)
+                    sb.AppendLine("- You must not have changed factions within the last " + cooldownFactionChange.ToString("#,##0") + " minutes.");
 
                 if (minPlayersOnline > 0)
                     sb.AppendLine("- At least " + minPlayersOnline.ToString("#,##0") + " players must be online to buy random/online gps.");
@@ -348,8 +352,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             }
             
             var cooldownManager = Plugin.CooldownManager;
+            var cooldownManagerFaction = Plugin.CooldownManagerFactionChange;
             var steamId = new SteamIdCooldownKey(player.SteamUserId);
-            var cooldownCommand = "buy";
 
             long currentBalance = MyBankingSystem.GetBalance(player.IdentityId);
 
@@ -358,7 +362,13 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 return;
             }
 
-            if (!cooldownManager.CheckCooldown(steamId, cooldownCommand, out long remainingSeconds)) {
+            if (!cooldownManagerFaction.CheckCooldown(steamId, GpsRoulettePlugin.COOLDOWN_COMMAND, out long remainingSecondsFaction)) {
+                Log.Info("Faction Cooldown for Player " + player.DisplayName + " still running! " + remainingSecondsFaction + " seconds remaining!");
+                Context.Respond("Command is still on cooldown after you changed Factions for " + remainingSecondsFaction + " seconds.");
+                return;
+            }
+
+            if (!cooldownManager.CheckCooldown(steamId, GpsRoulettePlugin.COOLDOWN_COMMAND, out long remainingSeconds)) {
                 Log.Info("Cooldown for Player " + player.DisplayName + " still running! " + remainingSeconds + " seconds remaining!");
                 Context.Respond("Command is still on cooldown for " + remainingSeconds + " seconds.");
                 return;
@@ -381,7 +391,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
                 MyBankingSystem.ChangeBalance(player.IdentityId, -price);
 
-                cooldownManager.StartCooldown(steamId, cooldownCommand, cooldownMs);
+                cooldownManager.StartCooldown(steamId, GpsRoulettePlugin.COOLDOWN_COMMAND, cooldownMs);
 
                 Context.Respond("Purchase successful!");
 

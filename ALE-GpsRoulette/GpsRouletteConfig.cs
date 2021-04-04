@@ -10,6 +10,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private long _priceCreditsNPC = 100_000_000L; //100 million credits
 
         private int _cooldownMinutes = 30; //30 Minutes
+        private int _cooldownMinutesFactionChange = 0; //Disabled by Default
 
         private int _lastOnlineMinutes = 0;  //ignore offline players unless they are inactive
         private int _offlineLongerThanHours = 24 * 7; //offline players offline for more than 7 days
@@ -38,6 +39,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public long PriceCreditsNPC { get => _priceCreditsNPC; set => SetValue(ref _priceCreditsNPC, value); }
 
         public int CooldownMinutes { get => _cooldownMinutes; set => SetValue(ref _cooldownMinutes, value); }
+        public int CooldownMinutesFactionChange { get => _cooldownMinutesFactionChange; set => SetValue(ref _cooldownMinutesFactionChange, value); }
         public int LastOnlineMinutes { get => _lastOnlineMinutes; set => SetValue(ref _lastOnlineMinutes, value); }
         public int OfflineLongerThanHours { get => _offlineLongerThanHours; set => SetValue(ref _offlineLongerThanHours, value); }
         public bool IncludePlayersWithoutFaction { get => _includePlayersWithoutFaction; set => SetValue(ref _includePlayersWithoutFaction, value); }
