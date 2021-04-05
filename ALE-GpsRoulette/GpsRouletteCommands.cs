@@ -730,7 +730,13 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return false;
         }
 
-        [Command("list random", "Lists all identities whose GPS can currently be bought.")]
+        [Command("list all", "Lists all identities whose GPS can currently be bought.")]
+        [Permission(MyPromoteLevel.Moderator)]
+        public void ListAll() {
+            ListInternal(PurchaseMode.RANDOM, false);
+        }
+
+        [Command("list random", "Lists all identities whose GPS can currently be bought via random.")]
         [Permission(MyPromoteLevel.Moderator)]
         public void ListRandom() {
             ListInternal(PurchaseMode.RANDOM);
@@ -754,9 +760,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             ListInternal(PurchaseMode.NPC);
         }
 
-        private void ListInternal(PurchaseMode mode) {
+        private void ListInternal(PurchaseMode mode, bool filterRandom = true) {
 
-            var buyables = FindFilteredBuyables(mode);
+            var buyables = FindFilteredBuyables(mode, filterRandom);
 
             List<string> lines = new List<string>();
 
@@ -866,12 +872,17 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return result;
         }
 
-        private Dictionary<long, PurchaseCollection> FindFilteredBuyables(PurchaseMode mode) {
+        private Dictionary<long, PurchaseCollection> FindFilteredBuyables(PurchaseMode mode, bool filterRandom = true) {
 
             var buyables = FindBuyables();
 
-            if (mode == PurchaseMode.RANDOM)
-                return FilterBuyablesForNpcRatio(buyables, mode);
+            if (mode == PurchaseMode.RANDOM) {
+
+                if(filterRandom)
+                    return FilterBuyablesForNpcRatio(buyables, mode);
+                else
+                    return buyables;
+            }
 
             var filtered = new Dictionary<long, PurchaseCollection>();
 
@@ -891,8 +902,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private Dictionary<long, PurchaseCollection> FindFilteredBuyablesForPlayer(PurchaseMode mode) {
 
-            /* If Random here may already have been NPCs removed. */
-            var buyables = FindFilteredBuyables(mode);
+            /* We dont want to have filtering for random in here to not filter twice. */
+            var buyables = FindFilteredBuyables(mode, false);
 
             var filtered = new Dictionary<long, PurchaseCollection>();
 
