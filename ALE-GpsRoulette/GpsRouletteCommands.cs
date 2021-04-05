@@ -310,7 +310,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         private void AddChancesToSb(StringBuilder sb, string prefix = "") {
 
-            Dictionary<long, List<PurchaseMode>> buyables;
+            Dictionary<long, PurchaseCollection> buyables;
 
             if (Context.Player == null)
                 buyables = FindFilteredBuyables(PurchaseMode.RANDOM);
@@ -523,7 +523,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return price + (long) Math.Round(price * (numberOfMembers - 1) * priceMultiplier);
         }
 
-        private bool BuyRandomFromDict(Dictionary<long, List<PurchaseMode>> buyables) {
+        private bool BuyRandomFromDict(Dictionary<long, PurchaseCollection> buyables) {
 
             List<long> buyablesAsList = new List<long>(buyables.Keys);
 
@@ -763,7 +763,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             foreach(var entry in buyables) {
 
                 long identityId = entry.Key;
-                List<PurchaseMode> modes = entry.Value;
+
+                List<PurchaseMode> modes = entry.Value.ToList();
+                modes.Sort();
 
                 IMyFaction faction = FactionUtils.GetPlayerFaction(identityId);
 
@@ -795,12 +797,12 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             }
         }
 
-        private Dictionary<long, List<PurchaseMode>> FindBuyables() {
+        private Dictionary<long, PurchaseCollection> FindBuyables() {
 
             var factionCollection = MySession.Static.Factions;
             var playerCollection = MySession.Static.Players;
             var identities = playerCollection.GetAllIdentities();
-            var result = new Dictionary<long, List<PurchaseMode>>();
+            var result = new Dictionary<long, PurchaseCollection>();
 
             var config = Plugin.Config;
 
@@ -821,7 +823,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 if (mustCheckPcu && config.MinPCUToBeFound > identity.BlockLimits.PCUBuilt)
                     continue;
 
-                var modes = new List<PurchaseMode>();
+                var modes = new PurchaseCollection();
 
                 if (isNpc) {
 
@@ -864,19 +866,19 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return result;
         }
 
-        private Dictionary<long, List<PurchaseMode>> FindFilteredBuyables(PurchaseMode mode) {
+        private Dictionary<long, PurchaseCollection> FindFilteredBuyables(PurchaseMode mode) {
 
             var buyables = FindBuyables();
 
             if (mode == PurchaseMode.RANDOM)
                 return FilterBuyablesForNpcRatio(buyables, mode);
 
-            var filtered = new Dictionary<long, List<PurchaseMode>>();
+            var filtered = new Dictionary<long, PurchaseCollection>();
 
             foreach (var entry in buyables) {
 
                 long identityId = entry.Key;
-                List<PurchaseMode> modes = entry.Value;
+                PurchaseCollection modes = entry.Value;
 
                 if (!modes.Contains(mode))
                     continue;
@@ -887,12 +889,12 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return FilterBuyablesForNpcRatio(filtered, mode);
         }
 
-        private Dictionary<long, List<PurchaseMode>> FindFilteredBuyablesForPlayer(PurchaseMode mode) {
+        private Dictionary<long, PurchaseCollection> FindFilteredBuyablesForPlayer(PurchaseMode mode) {
 
             /* If Random here may already have been NPCs removed. */
             var buyables = FindFilteredBuyables(mode);
 
-            var filtered = new Dictionary<long, List<PurchaseMode>>();
+            var filtered = new Dictionary<long, PurchaseCollection>();
 
             var player = Context.Player;
             var identityId = player.IdentityId;
@@ -928,7 +930,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             return FilterBuyablesForNpcRatio(filtered, mode);
         }
 
-        private Dictionary<long, List<PurchaseMode>> FilterBuyablesForNpcRatio(Dictionary<long, List<PurchaseMode>> buyables, PurchaseMode mode) {
+        private Dictionary<long, PurchaseCollection> FilterBuyablesForNpcRatio(Dictionary<long, PurchaseCollection> buyables, PurchaseMode mode) {
             
             /* If not Random no checks need to be done. */
             if(mode != PurchaseMode.RANDOM)
@@ -940,8 +942,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             if (ratio >= 100)
                 return buyables;
 
-            var returnDictionary = new Dictionary<long, List<PurchaseMode>>();
-            var npcs = new Dictionary<long, List<PurchaseMode>>();
+            var returnDictionary = new Dictionary<long, PurchaseCollection>();
+            var npcs = new Dictionary<long, PurchaseCollection>();
 
             /* Filter whats NPC and what is not. */
             foreach(var buyable in buyables) {
