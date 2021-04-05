@@ -51,6 +51,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/> <!-- 35 -->
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             
         </Grid.RowDefinitions>
 
@@ -122,31 +125,37 @@
         <TextBlock Grid.Column="0" Grid.Row ="22" VerticalAlignment="Center" Text="Only allow purchasing random/online gps if at least X players are online:" Margin="5"/>
         <TextBox Name="MinPlayerOnlineToBuy" Grid.Column="1" Grid.Row ="22" Grid.ColumnSpan="2" Margin="5" Text="{Binding MinPlayerOnlineToBuy}"/>
 
-        <Button Grid.Column="2" Grid.Row="23" Content="Save Config" Margin="6" Click="SaveButton_OnClick"></Button>
+        <TextBlock Grid.Column="0" Grid.Row ="23" VerticalAlignment="Center" Text="When buying random whats the max % NPCs can take up?" Margin="5"/>
+        <TextBox Name="MaxPercentageNPCInRandomSelection" Grid.Column="1" Grid.Row ="23" Grid.ColumnSpan="2" Margin="5" Text="{Binding MaxPercentageNPCInRandomSelection}"/>
 
-        <TextBlock Grid.Column="0" Grid.Row ="24" VerticalAlignment="Top" Grid.ColumnSpan="2" Text="Commands" Margin="5" FontWeight="Bold" />
-        <TextBlock Grid.Column="0" Grid.Row ="25" VerticalAlignment="Top" Text="!gps buy random" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="25" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="26" VerticalAlignment="Top" Text="!gps buy online" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="26" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an online player in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="27" VerticalAlignment="Top" Text="!gps buy inactive" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="27" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an inactive player in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="28" VerticalAlignment="Top" Text="!gps buy npc" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="28" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an NPC station in exchange for credits." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="29" VerticalAlignment="Top" Text="!gps list commands" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="29" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists buy commands that are enabled." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="30" VerticalAlignment="Top" Text="!gps list chances" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="30" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists chances of how likely it is to get a certain type of GPS." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="31" VerticalAlignment="Top" Text="!gps list random" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="31" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists all identities whose GPS can currently be bought." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="32" VerticalAlignment="Top" Text="!gps list online" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="32" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only online identities whose GPS can currently be bought." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="33" VerticalAlignment="Top" Text="!gps list inactive" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="33" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only inactive identities whose GPS can currently be bought." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="34" VerticalAlignment="Top" Text="!gps list npc" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="34" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only NPC identities whose GPS can currently be bought." Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row ="35" VerticalAlignment="Top" Text="!gps help" Margin="5" />
-        <TextBlock Grid.Column="1" Grid.Row ="35" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Displays how GPS Roulette works." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="24" VerticalAlignment="Center" Text="How many NPCs should be at least be in the selection when buying random?" Margin="5"/>
+        <TextBox Name="MinNpcsInRandomSelection" Grid.Column="1" Grid.Row ="24" Grid.ColumnSpan="2" Margin="5" Text="{Binding MinNpcsInRandomSelection}"/>
+
+        <Button Grid.Column="2" Grid.Row="25" Content="Save Config" Margin="6" Click="SaveButton_OnClick"></Button>
+
+        <TextBlock Grid.Column="0" Grid.Row ="26" VerticalAlignment="Top" Grid.ColumnSpan="2" Text="Commands" Margin="5" FontWeight="Bold" />
+        <TextBlock Grid.Column="0" Grid.Row ="27" VerticalAlignment="Top" Text="!gps buy random" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="27" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord in exchange for credits." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="28" VerticalAlignment="Top" Text="!gps buy online" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="28" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an online player in exchange for credits." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="29" VerticalAlignment="Top" Text="!gps buy inactive" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="29" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an inactive player in exchange for credits." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="30" VerticalAlignment="Top" Text="!gps buy npc" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="30" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Provides a random GPS coord of an NPC station in exchange for credits." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="31" VerticalAlignment="Top" Text="!gps list commands" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="31" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists buy commands that are enabled." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="32" VerticalAlignment="Top" Text="!gps list chances" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="32" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists chances of how likely it is to get a certain type of GPS." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="33" VerticalAlignment="Top" Text="!gps list random" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="33" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists all identities whose GPS can currently be bought." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="34" VerticalAlignment="Top" Text="!gps list online" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="34" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only online identities whose GPS can currently be bought." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="35" VerticalAlignment="Top" Text="!gps list inactive" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="35" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only inactive identities whose GPS can currently be bought." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="36" VerticalAlignment="Top" Text="!gps list npc" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="36" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Lists only NPC identities whose GPS can currently be bought." Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="37" VerticalAlignment="Top" Text="!gps help" Margin="5" />
+        <TextBlock Grid.Column="1" Grid.Row ="37" VerticalAlignment="Top" Grid.ColumnSpan="2" TextWrapping="Wrap" Text="Displays how GPS Roulette works." Margin="5"/>
 
     </Grid>
 </UserControl>

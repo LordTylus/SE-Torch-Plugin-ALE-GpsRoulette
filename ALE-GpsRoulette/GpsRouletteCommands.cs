@@ -146,6 +146,28 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             else
                 sb.AppendLine("- You can also randomly purchase the location of a faction member.");
 
+            var maxPercentageNpc = Plugin.Config.MaxPercentageNPCInRandomSelection;
+            var npcsMinPCU = Plugin.Config.MinPCUAlsoForNPC;
+
+            if (maxPercentageNpc < 100) {
+
+                sb.AppendLine("- Random GPS will limit number of NPCs to " + maxPercentageNpc + " %.");
+
+                var minNpcs = Plugin.Config.MinNpcsInRandomSelection;
+
+                if(npcsMinPCU)
+                    sb.AppendLine("- However there will always be at least " + minNpcs + " in the selection when able.");
+                else
+                    sb.AppendLine("- However there will always be at least " + minNpcs + " in the selection.");
+
+            } else {
+
+                if (npcsMinPCU)
+                    sb.AppendLine("- Random GPS will contain all NPCs if they have min PCU.");
+                else
+                    sb.AppendLine("- Random GPS will contain all NPCs regardless of how many PCU they have.");
+            }
+
             sb.AppendLine();
 
             sb.AppendLine("Currently active commands:");
@@ -212,8 +234,12 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 sb.AppendLine();
             }
 
+            bool atLeastOneActiveCommand = false;
+
             var price = Plugin.Config.PriceCreditsRandom;
             if (price >= 0) {
+
+                atLeastOneActiveCommand = true;
 
                 sb.AppendLine(prefix + "!gps buy random -- for " + price.ToString("#,##0") + " SC (Baseprice)");
 
@@ -223,7 +249,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             price = Plugin.Config.PriceCreditsOnline;
             if (price >= 0) {
-                
+
+                atLeastOneActiveCommand = true;
+
                 sb.AppendLine(prefix + "!gps buy online -- for " + price.ToString("#,##0") + " SC (Baseprice)");
                 
                 if (shouldShowAdjustedPrices)
@@ -232,7 +260,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             price = Plugin.Config.PriceCreditsInactive;
             if (price >= 0) {
-                
+
+                atLeastOneActiveCommand = true;
+
                 sb.AppendLine(prefix + "!gps buy inactive -- for " + price.ToString("#,##0") + " SC (Baseprice)");
                 
                 if (shouldShowAdjustedPrices)
@@ -242,11 +272,16 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             price = Plugin.Config.PriceCreditsNPC;
             if (price >= 0) {
 
+                atLeastOneActiveCommand = true;
+
                 sb.AppendLine(prefix + "!gps buy npc -- for " + price.ToString("#,##0") + " SC (Baseprice)");
 
                 if (shouldShowAdjustedPrices)
                     sb.AppendLine(prefix + "   You would pay " + GetAdjustedPriceForPlayer(price, identity).ToString("#,##0") + " SC");
             }
+
+            if(!atLeastOneActiveCommand)
+                sb.AppendLine(prefix + "Buying is currently NOT enabled!");
 
             if (Plugin.Config.UseDynamicPrices) {
                 sb.AppendLine();
@@ -834,7 +869,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             var buyables = FindBuyables();
 
             if (mode == PurchaseMode.RANDOM)
-                return buyables;
+                return FilterBuyablesForNpcRatio(buyables, mode);
 
             var filtered = new Dictionary<long, List<PurchaseMode>>();
 
@@ -849,11 +884,12 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 filtered.Add(identityId, modes);
             }
 
-            return filtered;
+            return FilterBuyablesForNpcRatio(filtered, mode);
         }
 
         private Dictionary<long, List<PurchaseMode>> FindFilteredBuyablesForPlayer(PurchaseMode mode) {
 
+            /* If Random here may already have been NPCs removed. */
             var buyables = FindFilteredBuyables(mode);
 
             var filtered = new Dictionary<long, List<PurchaseMode>>();
@@ -888,7 +924,64 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                 filtered.Add(entry.Key, entry.Value);
             }
 
-            return filtered;
+            /* After removing Faction Members and the player himself we may have to check again if NPCs needs to go */
+            return FilterBuyablesForNpcRatio(filtered, mode);
+        }
+
+        private Dictionary<long, List<PurchaseMode>> FilterBuyablesForNpcRatio(Dictionary<long, List<PurchaseMode>> buyables, PurchaseMode mode) {
+            
+            /* If not Random no checks need to be done. */
+            if(mode != PurchaseMode.RANDOM)
+                return buyables;
+
+            int ratio = Plugin.Config.MaxPercentageNPCInRandomSelection;
+
+            /* When all is NPC no checks needed */
+            if (ratio >= 100)
+                return buyables;
+
+            var returnDictionary = new Dictionary<long, List<PurchaseMode>>();
+            var npcs = new Dictionary<long, List<PurchaseMode>>();
+
+            /* Filter whats NPC and what is not. */
+            foreach(var buyable in buyables) {
+
+                if (buyable.Value.Contains(PurchaseMode.NPC))
+                    npcs.Add(buyable.Key, buyable.Value);
+                else
+                    returnDictionary.Add(buyable.Key, buyable.Value);
+            }
+
+            int numberOfEntries = returnDictionary.Count;
+
+            /* If theres no Other entry available just return all buyables. Should only be NPC in there. */
+            if (numberOfEntries == 0)
+                return buyables;
+
+            /* We must not round up because the percentage is a MAX value. */
+            int numberOfNpcsNeeded = (int) ((100.0F / (100.0F - ratio) * numberOfEntries) - numberOfEntries);
+
+            /* However the Min may override that, because its an absolute value compared to the dynamic percentage. */
+            numberOfNpcsNeeded = Math.Max(Plugin.Config.MinNpcsInRandomSelection, numberOfNpcsNeeded);
+
+            int numberOfNpcsAdded = 0;
+
+            /* Shuffle the NPCs to not always get the same ones. While a Dictionary is not "sorted" it still has a deterministic order. */
+            var npcList = npcs.ToList();
+            npcList.ShuffleList();
+
+            foreach (var npc in npcList) {
+
+                /* If no NPC is needed we break out immediately. Otherwise when we have the desired amount */
+                if (numberOfNpcsAdded >= numberOfNpcsNeeded)
+                    break;
+
+                returnDictionary.Add(npc.Key, npc.Value);
+
+                numberOfNpcsAdded++;
+            }
+
+            return returnDictionary;
         }
     }
 }

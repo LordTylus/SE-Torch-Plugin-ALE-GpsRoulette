@@ -34,6 +34,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         private bool _useDynamicPrices = false;
         private float _dynamicPriceMultiplier = 1.0F;
 
+        private int _maxPercentageNPCInRandomSelection = 100; //All NPCs should show up
+        private int _minNpcsInRandomSelection = 1; //At least 1 NPC
+
         public long PriceCreditsRandom { get => _priceCreditsRandom; set => SetValue(ref _priceCreditsRandom, value); }
         public long PriceCreditsOnline { get => _priceCreditsOnline; set => SetValue(ref _priceCreditsOnline, value); }
         public long PriceCreditsInactive { get => _priceCreditsInactive; set => SetValue(ref _priceCreditsInactive, value); }
@@ -59,5 +62,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
         public bool UseDynamicPrices { get => _useDynamicPrices; set => SetValue(ref _useDynamicPrices, value); }
         public float DynamicPriceMultiplier { get => _dynamicPriceMultiplier; set => SetValue(ref _dynamicPriceMultiplier, value); }
+
+        public int MaxPercentageNPCInRandomSelection { get => _maxPercentageNPCInRandomSelection; set => SetValue(ref _maxPercentageNPCInRandomSelection, value); }
+        public int MinNpcsInRandomSelection { get => _minNpcsInRandomSelection; set => SetValue(ref _minNpcsInRandomSelection, value); }
     }
 }
