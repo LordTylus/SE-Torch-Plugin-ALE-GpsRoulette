@@ -39,6 +39,8 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
         public CooldownManager CooldownManagerFactionChange { get; } = new CooldownManager();
         public CooldownManager ConfirmationManager { get; } = new CooldownManager();
 
+        private readonly Dictionary<long, DateTime> lastLoginDateMap = new Dictionary<long, DateTime>();
+        
         private HashSet<EntityIdCooldownKey> NotificationQueue { get; } = new HashSet<EntityIdCooldownKey>();
         private CooldownManager CooldownManagerNotificationQueue { get; } = new CooldownManager();
 
@@ -66,6 +68,9 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     MySession.Static.Factions.FactionCreated += FactionCreated;
                     MySession.Static.Factions.FactionStateChanged += FactionStateChanged;
 
+                    MyVisualScriptLogicProvider.PlayerConnected += PlayerConnected;
+                    MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
+
                     break;
 
                 case TorchSessionState.Unloading:
@@ -75,7 +80,38 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     MySession.Static.Factions.FactionCreated -= FactionCreated;
                     MySession.Static.Factions.FactionStateChanged -= FactionStateChanged;
 
+                    MyVisualScriptLogicProvider.PlayerConnected -= PlayerConnected;
+                    MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
+
                     break;
+            }
+        }
+
+        private void PlayerConnected(long playerId) {
+
+            try {
+
+                Log.Info("Player #" + playerId + " connected");
+
+                if (lastLoginDateMap.ContainsKey(playerId))
+                    lastLoginDateMap.Remove(playerId);
+
+                lastLoginDateMap.Add(playerId, DateTime.Now);
+
+            } catch (Exception e) {
+                Log.Error(e, "Error retrieving last Login Date for Player!");
+            }
+        }
+
+        private void PlayerDisconnected(long playerId) {
+
+            try {
+
+                if (lastLoginDateMap.ContainsKey(playerId))
+                    lastLoginDateMap.Remove(playerId);
+
+            } catch (Exception e) {
+                Log.Error(e, "Error removing last Login Date for Player!");
             }
         }
 
@@ -180,6 +216,16 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             } catch(Exception e) {
                 Log.Error(e, "Error on Update!");
             }
+        }
+
+        public DateTime getLastLoginDate(long identityId) {
+
+            if (lastLoginDateMap.ContainsKey(identityId))
+                return lastLoginDateMap[identityId];
+
+            Log.Warn("Could not find LastLoginDate for Identity #" + identityId);
+
+            return DateTime.Now;
         }
 
         public void AddIdentityToNotifiticationQueue(long identityId) {

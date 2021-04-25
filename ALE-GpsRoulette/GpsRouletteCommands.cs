@@ -425,7 +425,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
 
             if(minOnlineTime > 0) {
 
-                var lastSeen = PlayerUtils.GetLastSeenDate(identity);
+                var lastSeen = Plugin.getLastLoginDate(identity.IdentityId);
                 var minOnlineDate = DateTime.Now.AddMinutes(-Plugin.Config.MinOnlineMinutesToBuy);
 
                 if (lastSeen > minOnlineDate) {
