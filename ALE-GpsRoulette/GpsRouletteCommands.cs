@@ -704,7 +704,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
             bool playSound = true;
             long entityId = 0L;
 
-            gpsCollection.SendAddGps(playerId, ref gps, entityId, playSound);
+            gpsCollection.SendAddGpsRequest(playerId, ref gps, entityId, playSound);
             
             return true;
         }
