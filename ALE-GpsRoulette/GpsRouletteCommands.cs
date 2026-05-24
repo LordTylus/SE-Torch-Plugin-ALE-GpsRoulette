@@ -610,7 +610,7 @@ namespace ALE_GpsRoulette.ALE_GpsRoulette {
                     return null;
                 }
 
-                var stationsList = new List<MyStation>(stations);
+                var stationsList = new List<IMyFactionStation>(stations);
                 stationsList.ShuffleList();
 
                 var station = stations.First();
